@@ -1,0 +1,11 @@
+[tagpr]
+releaseBranch = main
+versionFile = Cargo.toml,e2e/Cargo.toml,rendercom/Dockerfile
+vPrefix = false
+changelog = true
+release = true
+majorLabels = bump-major
+minorLabels = bump-minor
+commitPrefix = Release
+postVersionCommand = cargo check --workspace
+

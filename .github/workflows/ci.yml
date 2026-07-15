@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - run: cargo check --workspace --locked
+      - run: cargo test --workspace --locked
+      - name: Reject latest image references
+        run: |
+          if grep -R ':latest' --include='Dockerfile' .; then
+            echo 'A Dockerfile contains a latest tag' >&2
+            exit 1
+          fi
+

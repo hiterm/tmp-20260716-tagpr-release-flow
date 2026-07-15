@@ -1,0 +1,8 @@
+[package]
+name = "tagpr-release-flow"
+version = "2.8.1"
+edition = "2024"
+
+[workspace]
+members = ["e2e"]
+
