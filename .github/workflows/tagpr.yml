@@ -5,6 +5,7 @@ on:
     branches: [main]
 
 permissions:
+  actions: write
   contents: write
   issues: read
   packages: write
@@ -22,6 +23,14 @@ jobs:
         uses: Songmu/tagpr@d1b8138b7a31075141b6cd64103de9485ced7ac9 # v1.20.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Dispatch CI for the release PR
+        if: steps.tagpr.outputs.tag == '' && steps.tagpr.outputs.pull_request != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_branch="$(gh pr list --label tagpr --state open --json headRefName --jq '.[0].headRefName')"
+          test -n "$release_branch"
+          gh workflow run ci.yml --ref "$release_branch"
       - name: Verify released versions agree
         if: steps.tagpr.outputs.tag != ''
         env:
@@ -55,4 +64,3 @@ jobs:
       - name: Verify Render image reference
         if: steps.tagpr.outputs.tag != ''
         run: docker build --pull --file rendercom/Dockerfile --tag tagpr-render-verify:${{ steps.tagpr.outputs.tag }} .
-
