@@ -30,7 +30,13 @@ jobs:
         run: |
           release_branch="$(gh pr list --label tagpr --state open --json headRefName --jq '.[0].headRefName')"
           test -n "$release_branch"
-          gh workflow run ci.yml --ref "$release_branch"
+          for attempt in 1 2 3 4 5; do
+            if gh workflow run ci.yml --ref "$release_branch"; then
+              exit 0
+            fi
+            sleep "$((attempt * 2))"
+          done
+          exit 1
       - name: Verify released versions agree
         if: steps.tagpr.outputs.tag != ''
         env:
