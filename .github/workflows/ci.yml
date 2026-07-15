@@ -24,3 +24,26 @@ jobs:
             echo 'A Dockerfile contains a latest tag' >&2
             exit 1
           fi
+
+  report-dispatch-status:
+    if: always() && github.event_name == 'workflow_dispatch'
+    needs: rust
+    permissions:
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report result on the release PR commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESULT: ${{ needs.rust.result }}
+        run: |
+          state=failure
+          description='Release PR validation failed'
+          if [ "$RESULT" = success ]; then
+            state=success
+            description='Release PR validation passed'
+          fi
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$state" \
+            -f context=release-pr-ci \
+            -f description="$description"
